@@ -1,0 +1,33 @@
+def versionName = "0.6.0"
+def repo = new File(rootDir, "repository")
+
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        aar(MavenPublication) {
+            version = "${versionName}"      // version
+            groupId = 'jp.co.westunitis.systemupdater'      // グループ名
+            artifactId = 'systemupdater' // ライブラリ名
+            artifact("$buildDir/outputs/aar/systemupdater-release.aar")
+        }
+    }
+    repositories {
+        maven {
+            url "file://${repo.absolutePath}"
+        }
+    }
+}
+
+//apply plugin: 'maven'
+//
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository url: "file://${repo.absolutePath}"
+//            pom.version = "${versionName}"      // version
+//            pom.groupId = 'jp.co.westunitis.systemupdater'      // グループ名
+//            pom.artifactId = 'systemupdater' // ライブラリ名
+//        }
+//    }
+//}

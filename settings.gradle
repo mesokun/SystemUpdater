@@ -1,0 +1,3 @@
+include ':systemupdater'
+include ':app'
+rootProject.name = "SystemUpdater"

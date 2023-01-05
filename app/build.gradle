@@ -1,0 +1,72 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 29
+
+    defaultConfig {
+        applicationId "jp.co.westunitis.systemupdater"
+        minSdkVersion 29
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation files('framework/TsHmdUpdateSDK.jar')
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    compileOnly fileTree(dir: 'framework', include:['*.jar'])
+    implementation 'com.google.guava:guava:24.1-jre'
+
+    def retrofit_version = '2.8.1'
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+
+    def okhttp_version = '4.4.0'
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version" // ログ出力に必要
+}
+
+
+import groovy.xml.*
+task changeOrderEntry {
+    def iml = file("../.idea/modules/app/SystemUpdater.app.iml")
+    def doc = (new XmlParser()).parse(iml);
+    def deleteNode = doc.component[1].orderEntry.find
+            { it.@type == "jdk" }
+
+    def _type = deleteNode.@type
+    def _jdkName = deleteNode.@jdkName
+    def _jdkType = deleteNode.@jdkType
+
+    doc.component[1].remove(deleteNode)
+    new Node(doc.component[1], 'orderEntry',
+            ['type': _type, 'jdkName': _jdkName, 'jdkType': _jdkType])
+
+    iml.text = XmlUtil.serialize(doc)
+}
+preBuild.dependsOn(changeOrderEntry)
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs.add('-Xbootclasspath/p:app/framework/framework.jar')
+}
